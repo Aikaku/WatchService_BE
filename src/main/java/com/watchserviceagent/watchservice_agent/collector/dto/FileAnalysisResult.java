@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FileAnalysisResult {
+    private String ownerKey;     // 세션 단위 사용자 구분
     private String filePath;
     private long size;
     private String extension;

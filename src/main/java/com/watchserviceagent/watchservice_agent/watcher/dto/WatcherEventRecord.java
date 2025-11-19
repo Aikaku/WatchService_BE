@@ -10,7 +10,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class WatcherEventRecord {
-    private String eventType;
-    private String path;
-    private Instant timestamp;
+    private String ownerKey;     // 사용자 세션 키 (UUID)
+    private String eventType;    // CREATE / MODIFY / DELETE
+    private String path;         // 파일 경로
+    private Instant timestamp;   // 이벤트 발생 시각
 }
+

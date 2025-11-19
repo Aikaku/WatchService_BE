@@ -1,22 +1,46 @@
 package com.watchserviceagent.watchservice_agent.collector.business;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
- * 파일의 Shannon 엔트로피를 계산하는 도메인 서비스
- * - Collector의 핵심 비즈니스 로직 중 하나
+ * 클래스 이름 : EntropyAnalyzer
+ * 기능 : 파일의 Shannon Entropy(정보 무작위도)를 계산한다.
+ * 작성 날짜 : 2025/10/01
+ * 작성자 : 이상혁
  */
 @Component
+@Slf4j
 public class EntropyAnalyzer {
 
     /**
-     * 파일의 엔트로피를 계산한다.
-     * @param filePath 분석할 파일 경로
-     * @return Shannon entropy 값 (0~8)
+     * Shannon Entropy 계산 메서드
+     * @param filePath 분석 대상 파일 경로
+     * @return 0~8 사이의 엔트로피 값
      */
-    public double calculateEntropy(String filePath) throws IOException {
-        // TODO: 파일의 바이트 데이터를 읽고 Shannon entropy 계산
-        return 0.0;
+    public double calculateEntropy(String filePath) {
+        try {
+            byte[] data = Files.readAllBytes(Path.of(filePath));
+            int[] freq = new int[256];
+
+            for (byte b : data) {
+                freq[b & 0xFF]++;
+            }
+
+            double entropy = 0.0;
+            for (int f : freq) {
+                if (f > 0) {
+                    double p = (double) f / data.length;
+                    entropy -= p * (Math.log(p) / Math.log(2)); // Shannon 공식
+                }
+            }
+            return entropy; // 0~8 범위
+        } catch (IOException e) {
+            log.error("[EntropyAnalyzer] 파일 읽기 실패: {}", filePath, e);
+            return 0.0;
+        }
     }
 }

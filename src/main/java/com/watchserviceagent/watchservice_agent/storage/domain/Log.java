@@ -17,11 +17,13 @@ public class Log {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;             // 고유 식별자
 
+    private String ownerKey;      // 세션 식별자 (UUID)
     private String eventType;    // CREATE / MODIFY / DELETE
     private String path;         // 파일 경로
     private String hash;         // 파일 해시값
     private double entropy;      // 엔트로피 값
     private long size;           // 파일 크기
     private String extension;    // 파일 확장자
+    private long lastModified;
     private Instant timestamp;   // 로그 저장 시각
 }
