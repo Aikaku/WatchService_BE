@@ -3,59 +3,42 @@ package com.watchserviceagent.watchservice_agent.storage;
 import com.watchserviceagent.watchservice_agent.collector.dto.FileAnalysisResult;
 import com.watchserviceagent.watchservice_agent.storage.domain.Log;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * 로그 저장 및 비교를 담당하는 서비스 클래스
+ * Storage 레이어의 서비스.
+ *
+ * 역할:
+ *  - Collector 쪽에서 FileAnalysisResult를 enqueue(...) 로 전달받아
+ *    LogWriterWorker 큐에 넣는 진입점.
+ *  - Controller 쪽에서 로그 조회 요청이 오면 LogRepository를 통해 조회.
  */
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class LogService {
 
+    private final LogWriterWorker logWriterWorker;
     private final LogRepository logRepository;
 
     /**
-     * Collector 결과를 DB에 저장
+     * Collector가 생성한 분석 결과를 비동기 로그 쓰기 큐에 넣는다.
+     *
+     * @param result FileCollectorService에서 생성한 FileAnalysisResult
      */
-    public void save(FileAnalysisResult result) {
-        // TODO: FileAnalysisResult → Log 변환 후 저장
+    public void saveAsync(FileAnalysisResult result) {
+        logWriterWorker.enqueue(result);
     }
 
     /**
-     * 모든 로그 조회
+     * 특정 ownerKey에 대해 최근 N건의 로그를 조회한다.
+     *
+     * @param ownerKey 사용자/세션 식별자
+     * @param limit    최대 조회 개수
+     * @return Log 리스트 (최신순)
      */
-    public List<Log> getAllLogs() {
-        // TODO: 전체 로그 조회
-        return List.of();
-    }
-
-    /**
-     * 로그 삭제
-     */
-    public void deleteLog(Long id) {
-        // TODO: 로그 삭제
-    }
-
-    /**
-     * 특정 파일 경로의 마지막 분석 결과 조회
-     * - 변경 비교를 위해 이전 상태 불러옴
-     */
-    public FileAnalysisResult findLastByPath(String path) {
-        // TODO: 최근 로그 조회 로직
-        return null;
-    }
-
-    /**
-     * Collector가 전달한 새로운 분석 결과와 기존 상태 비교
-     * - 해시, 엔트로피, 파일 크기 등 비교
-     * @return true → 변경됨, false → 동일
-     */
-    public boolean isChanged(FileAnalysisResult newResult) {
-        // TODO: 이전 결과와 비교 후 boolean 반환
-        return false;
+    public List<Log> getRecentLogs(String ownerKey, int limit) {
+        return logRepository.findRecentLogsByOwner(ownerKey, limit);
     }
 }
